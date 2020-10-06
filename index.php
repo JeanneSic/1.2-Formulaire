@@ -8,8 +8,8 @@
 </head>
 <body>
 <?php
-$firstNameErr = $lastNameErr = $emailErr = $phoneNumberErr = "";
-$firstName = $lastName = $email = $phoneNumber = "";
+$firstNameErr = $lastNameErr = $emailErr = $phoneNumberErr = $userMessageErr = "";
+$firstName = $lastName = $email = $phoneNumber = $userMessage = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST"){
     if (empty($_POST["first_name"])) {
@@ -39,6 +39,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
     }
     if (empty($_POST['phone_number'])) {
         $phoneNumberErr = "Your phone number cannot be empty";
+    }
+     if (empty($_POST['user_message'])) {
+        $userMessageErr = "Your message cannot be empty";
     }
 }
 function test_input($data) {
@@ -85,7 +88,8 @@ function test_input($data) {
     <br><br>
     <div>
         <label  for="message">Message :</label>
-        <textarea  id="message"  name="user_message"></textarea>
+        <textarea name="comment" rows="5" cols="40"><?php echo $userMessage;?></textarea>
+        <span class="error">* <?php echo $userMessageErr?></span>
     </div>
     <br><br>
     <div  class="button">
