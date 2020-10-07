@@ -8,94 +8,103 @@
 </head>
 <body>
 <?php
-$firstNameErr = $lastNameErr = $emailErr = $phoneNumberErr = $userMessageErr = "";
-$firstName = $lastName = $email = $phoneNumber = $userMessage = "";
 
-if ($_SERVER["REQUEST_METHOD"] == "POST"){
-    if (empty($_POST["first_name"])) {
-        $firstNameErr = "first name is required";
-    } else {
-        $firstName = test_input($_POST["first_name"]);
-        if (!preg_match("/^[a-zA-Z-' ]*$/",$firstName)){
-            $firstNameErr = "Only letters and white space allowed";
-        }
-    }
+$subjects=[
+'cbi' => 'La configuration de ma boxe internet',
+'amf' => 'L\'automatisation de mes factures',
+'vsi' => 'La vie sans internet',
+];
 
-    if (empty($_POST["last_name"])) {
-        $lastNameErr = "last name is required";
-    } else {
-        $lastName = test_input($_POST["last_name"]);
-        if (!preg_match("/^[a-zA-Z-' ]*$/",$lastName)){
-            $lastNameErr = "Only letters and white space allowed";
-        }
-    }
-    if (empty($_POST["user_email"])) {
-        $emailErr = "Email is required";
-    } else {
-        $email = test_input($_POST["user_email"]);
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $emailErr = "Invalid email format";
-        }
-    }
-    if (empty($_POST['phone_number'])) {
-        $phoneNumberErr = "Your phone number cannot be empty";
-    }
-     if (empty($_POST['user_message'])) {
-        $userMessageErr = "Your message cannot be empty";
+$firstName = $lastName = $email = $phoneNumber = $subject = $userMessage = "";
+
+if (!empty($_POST) && isset($_POST['btnContact'])){
+    $errors = [];
+
+    $firstName = trim($_POST['first_name']);
+    $lastName = trim($_POST['last_name']);
+    $email = trim($_POST['user_email']);
+    $phoneNumber = trim($_POST['phone_number']);
+    $subject = trim($_POST['subject']);
+    $userMessage = trim($_POST['user_message']);
+
+    if (empty($firstName))
+        $errors['first_name'] ='Required';
+    if (empty($lastName))
+        $errors['last_name'] ='Required';
+    if (empty($email))
+        $errors['user_email'] = 'Required';
+    if (!preg_match("/^[A-Z\.0-9]+@[A-Z-]+\.[A-Z]{2,}$/i", $email))
+        $errors['user_email'] = 'Invalid email';
+    if (empty($phoneNumber))
+        $errors['phone_number'] = 'Required';
+    if (empty($subject))
+        $errors['subject'] = 'Required';
+    if (empty($userMessage))
+        $errors['user_message'] = 'Required';
+
+    if (empty($errors)) {
+        header("Location: /thanks.php?first_name=$firstName&last_name=$lastName&user_email=$email&phone_number=$phoneNumber&subject=$subject&user_message=$userMessage");        
     }
 }
-function test_input($data) {
-    $data = trim($data);
-    $data = stripslashes($data);
-    $data = htmlspecialchars($data);
-    return $data;
-}
+
 ?>
 <h2>Mon formulaire</h2>
-<form action= "<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post">
+<form action= "index.php" method="post" novalidate>
     <div>
         <label for="first_name">First name :</label>
-        <input  type="text"  id="nom"  name="first_name" value="<?php echo $firstName ?>"/>
-        <span class="error">* <?php echo $firstNameErr?></span>
+        <input required type="text"  id="first_name"  name="first_name" value="<?= $firstName ?>">
+        <?php if (isset($errors['first_name'])): ?>
+            <span><?= $errors['first_name'] ?></span>
+        <?php endif; ?>
     </div>
     <br><br>
     <div>
         <label for="last_name">Last name :</label>
-        <input  type="text"  id="nom"  name="last_name" value="<?php echo $lastName ?>"/>
-        <span class="error">* <?php echo $lastNameErr?></span>
+        <input  required type="text"  id="nom"  name="last_name" value="<?= $lastName ?>">
+        <?php if (isset($errors['last_name'])): ?>
+            <span><?= $errors['last_name'] ?></span>
+        <?php endif; ?>
     </div>
     <br><br>
     <div>
         <label  for="email">Email :</label>
-        <input  type="email"  id="email"  name="user_email" value="<?php echo $email ?>"/>
-        <span class="error">* <?php echo $emailErr?></span>
+        <input  required type="email"  id="email"  name="user_email" value="<?= $email ?>"/>
+        <?php if (isset($errors['user_email'])): ?>
+            <span><?= $errors['user_email'] ?></span>
+        <?php endif; ?>
     </div>
     <br><br>
     <div>
         <label for="phone_number">Phone number :</label>
-        <input type="tel" id="phone_number" name="phone_number" value="<?php echo $phoneNumber ?>"/>
-        <span class="error">* <?php echo $phoneNumberErr?></span>
+        <input required type="tel" id="phone_number" name="phone_number" value="<?= $email; ?>"/>
+        <?php if (isset($errors['phone_number'])): ?>
+            <span><?= $errors['phone_number'] ?></span>
+        <?php endif; ?>
     </div>
     <br><br>
     <div>
         <label for="subject">Subject: </label>
-        <select name="subject">
-        <option>"La configuration de ma boxe internet"</option>
-        <option>"L'automatisation de mes factures"</option>
-        <option>"La vie sans internet"</option>
+        <select required name="subject">
+            <option>"La configuration de ma boxe internet"</option>
+            <option>"L'automatisation de mes factures"</option>
+            <option>"La vie sans internet"</option>
+            <?php foreach ($subjects as $ref => $subject) { ?>
+            <option value="<?= $ref ?>"><?= $subject ?></option>
+            <?php } ?>
         </select>
     </div>
     <br><br>
     <div>
-        <label  for="message">Message :</label>
-        <textarea name="comment" rows="5" cols="40"><?php echo $userMessage;?></textarea>
-        <span class="error">* <?php echo $userMessageErr?></span>
+        <label for="user_message">Message:</label>
+        <textarea required name="user_message" id="message" cols="30" rows="10" value="<?= $userMessage?>"></textarea>
+        <?php if (isset($errors['user_message'])):?>
+        <span><?= $errors['user_message']?></span>
+        <?php endif?>
     </div>
-    <br><br>
-    <div  class="button">
-        <button  type="submit">Submit</button>
-    </div>
-</form>
 
+    <button name="btnContact" type="submit" class="btn btn-primary">Send</button>
+    </form>
+    <br><br>
+    
 </body>
 </html>
